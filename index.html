@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <style>
     *, *::before, *::after {
       box-sizing: border-box;
@@ -650,6 +651,327 @@
       animation: shine 2.5s infinite;
     }
 
+    /* Music Player Styles */
+    .music-player-panel {
+      background-color: rgba(17, 24, 39, 0.5);
+      backdrop-filter: blur(4px);
+      border-radius: 0.5rem;
+      border: 1px solid rgba(31, 41, 55, 0.5);
+      margin-top: 1.5rem;
+      padding: 1rem;
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+      animation: slideInUp 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+      animation-delay: 0.8s;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      will-change: transform, opacity, box-shadow;
+    }
+
+    .music-player-panel:hover {
+      transform: scale(1.02) translateY(-5px);
+      box-shadow: 0 12px 30px -5px rgba(56, 189, 248, 0.15), 0 10px 10px -5px rgba(56, 189, 248, 0.1);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem;
+      cursor: pointer;
+    }
+
+    .player-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      background: linear-gradient(to right, #38bdf8, #60a5fa, #0284c7);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      transition: text-shadow 0.4s ease, transform 0.3s ease;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .player-title.playing::after,
+    .player-title.paused::after,
+    .player-title.stopped::after {
+      content: attr(data-status);
+      margin-left: 0.5rem;
+      font-size: 0.875rem;
+      color: #d1d5db;
+      opacity: 0;
+      animation: typeStatus 1.2s ease-in-out infinite;
+      transform: translateY(0);
+    }
+
+    .player-title.playing::after {
+      animation: typeStatusPlaying 1.5s ease-in-out infinite;
+    }
+
+    .player-title.paused::after {
+      animation: typeStatusPaused 1.5s ease-in-out infinite;
+    }
+
+    .player-title.stopped::after {
+      animation: typeStatusStopped 1.5s ease-in-out infinite;
+    }
+
+    @keyframes typeStatusPlaying {
+      0% { opacity: 0; transform: translateY(5px); }
+      50% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-5px); }
+    }
+
+    @keyframes typeStatusPaused {
+      0% { opacity: 0; transform: translateX(-5px); }
+      50% { opacity: 1; transform: translateX(0); }
+      100% { opacity: 0; transform: translateX(5px); }
+    }
+
+    @keyframes typeStatusStopped {
+      0% { opacity: 0; transform: scale(0.8); }
+      50% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(0.8); }
+    }
+
+    .music-player-panel:hover .player-title {
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.7);
+      transform: scale(1.05);
+    }
+
+    .player-toggle-btn {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.5rem;
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .player-toggle-btn:hover {
+      color: #60a5fa;
+      transform: scale(1.2) rotate(90deg);
+    }
+
+    .player-controls {
+      display: none;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      animation: slideInControls 0.5s ease-out forwards;
+    }
+
+    .music-player-panel.expanded .player-controls {
+      display: flex;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 0.5rem;
+      background-color: #1f2937;
+      border-radius: 9999px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .progress-bar-container:hover {
+      background-color: #374151;
+      transform: scale(1.02);
+    }
+
+    .progress-current {
+      height: 100%;
+      background: linear-gradient(to right, #38bdf8, #60a5fa);
+      border-radius: 9999px;
+      width: 0;
+      transition: width 0.3s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-current::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shineProgress 2s infinite;
+    }
+
+    .time-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+      color: #d1d5db;
+      margin-top: 0.5rem;
+      opacity: 0;
+      animation: fadeInTime 0.6s ease-out forwards;
+      animation-delay: 0.2s;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeInControls 0.6s ease-out forwards;
+      animation-delay: 0.3s;
+    }
+
+    .control-btn {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      color: #38bdf8;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .control-btn:hover {
+      background: rgba(56, 189, 248, 0.25);
+      transform: scale(1.15) translateY(-2px);
+      color: #60a5fa;
+      box-shadow: 0 4px 10px rgba(56, 189, 248, 0.3);
+    }
+
+    .control-btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: left 0.4s ease;
+    }
+
+    .control-btn:hover::after {
+      left: 100%;
+    }
+
+    .control-btn.active i {
+      color: #60a5fa;
+      transform: scale(1.1);
+      animation: pulseIcon 1s ease-in-out infinite;
+    }
+
+    .control-btn i {
+      transition: transform 0.3s ease, color 0.3s ease;
+    }
+
+    .volume-control {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      opacity: 0;
+      animation: fadeInControls 0.6s ease-out forwards;
+      animation-delay: 0.4s;
+    }
+
+    .volume-bar-container {
+      width: 100%;
+      height: 0.5rem;
+      background-color: #1f2937;
+      border-radius: 9999px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .volume-bar-container:hover {
+      transform: scale(1.02);
+    }
+
+    .volume-bar {
+      height: 100%;
+      background: linear-gradient(to right, #38bdf8, #60a5fa);
+      border-radius: 9999px;
+      width: 70%;
+      transition: width 0.3s ease-out;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .volume-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.4) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      animation: shineProgress 2s infinite;
+    }
+
+    #volume-slider {
+      width: 100%;
+      -webkit-appearance: none;
+      height: 0.5rem;
+      background: #1f2937;
+      border-radius: 9999px;
+      outline: none;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    #volume-slider:hover {
+      background: #374151;
+      transform: scale(1.02);
+    }
+
+    #volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 1rem;
+      height: 1rem;
+      background: #38bdf8;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      transition: transform 0.3s ease;
+    }
+
+    #volume-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    #volume-slider::-moz-range-thumb {
+      width: 1rem;
+      height: 1rem;
+      background: #38bdf8;
+      border-radius: 9999px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+      transition: transform 0.3s ease;
+    }
+
+    #volume-slider::-moz-range-thumb:hover {
+      transform: scale(1.2);
+    }
+
     @keyframes slideInLeft {
       from {
         opacity: 0;
@@ -687,6 +1009,28 @@
       }
       to {
         opacity: 0.5;
+      }
+    }
+
+    @keyframes fadeInControls {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInTime {
+      from {
+        opacity: 0;
+        transform: translateY(5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
 
@@ -752,6 +1096,15 @@
       }
     }
 
+    @keyframes shineProgress {
+      0% {
+        transform: translateX(-150%) skewX(-30deg);
+      }
+      100% {
+        transform: translateX(150%) skewX(-30deg);
+      }
+    }
+
     @keyframes textGlow {
       0%, 100% {
         text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
@@ -767,6 +1120,15 @@
       }
       51%, 100% {
         opacity: 0;
+      }
+    }
+
+    @keyframes pulseIcon {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
       }
     }
 
@@ -790,6 +1152,8 @@
     <div class="bg-blob-3"></div>
     <div class="bg-grid-pattern"></div>
   </div>
+
+  <audio id="background-music" src="music.mp3"></audio>
 
   <div class="container">
     <header class="profile-header">
@@ -921,7 +1285,7 @@
       <div class="card">
         <div class="card-header">
           <div class="card-icon-container">
-            <svg class="card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="card-icon" viewBox="0 0 24 24" fill="none" YOstroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
               <polyline points="2 17 12 22 22 17"></polyline>
               <polyline points="2 12 12 17 22 12"></polyline>
@@ -1024,6 +1388,36 @@
           </div>
         </div>
       </div>
+
+      <!-- Music Player -->
+      <div class="music-player-panel">
+        <div class="player-header">
+          <span class="player-title"><span id="player-title-text">Музычка</span></span>
+          <button id="music-toggle" class="player-toggle-btn"><i class="fas fa-chevron-down"></i></button>
+        </div>
+        <div class="player-controls">
+          <div class="progress-bar-container">
+            <div class="progress-current"></div>
+          </div>
+          <div class="time-display">
+            <span class="current-time">00:00</span>
+            <span class="total-time">00:00</span>
+          </div>
+          <div class="control-buttons">
+            <button id="play-pause-btn" class="control-btn"><i class="fas fa-play"></i></button>
+            <button id="stop-btn" class="control-btn"><i class="fas fa-stop"></i></button>
+            <button id="repeat-btn" class="control-btn"><i class="fas fa-redo"></i></button>
+            <button id="volume-btn" class="control-btn"><i class="fas fa-volume-up"></i></button>
+            <button id="reload-btn" class="control-btn"><i class="fas fa-sync-alt"></i></button>
+          </div>
+          <div class="volume-control">
+            <input type="range" id="volume-slider" min="0" max="100" value="70">
+            <div class="volume-bar-container">
+              <div class="volume-bar"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1090,15 +1484,23 @@
     }
 
     // Progress Bar Animation
-    setTimeout(() => {
-      document.getElementById('java-progress').style.width = '80%';
-      setTimeout(() => {
-        document.getElementById('python-progress').style.width = '15%';
-      }, 200);
-      setTimeout(() => {
-        document.getElementById('js-progress').style.width = '5%';
-      }, 400);
-    }, 500);
+    function animateProgressBars() {
+      const progressBars = [
+        { id: 'java-progress', width: '80%' },
+        { id: 'python-progress', width: '15%' },
+        { id: 'js-progress', width: '5%' }
+      ];
+
+      progressBars.forEach((bar, index) => {
+        setTimeout(() => {
+          const element = document.getElementById(bar.id);
+          if (element) {
+            element.style.transition = 'width 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+            element.style.width = bar.width;
+          }
+        }, 500 + index * 200);
+      });
+    }
 
     // Discord Status Update
     function updateDiscordStatus(status) {
@@ -1107,15 +1509,289 @@
       
       statusIndicator.classList.remove('status-online', 'status-idle', 'status-dnd', 'status-offline');
       
-      // Hardcode status to 'online'
       statusIndicator.classList.add('status-online');
       statusText.textContent = 'Онлайн';
     }
 
-    // Start animations and set status
-    setTimeout(typewriterEffect, 1000);
-    setTimeout(animateDots, 2000);
-    updateDiscordStatus('online');
+    // Music Player JavaScript
+    let musicPlaying = false;
+    let musicStopped = true;
+
+    function initMusicPlayer() {
+      const playerHeader = document.querySelector('.player-header');
+      const playerPanel = document.querySelector('.music-player-panel');
+      const musicToggle = document.getElementById('music-toggle');
+      const playPauseBtn = document.getElementById('play-pause-btn');
+      const stopBtn = document.getElementById('stop-btn');
+      const audio = document.getElementById('background-music');
+      const volumeSlider = document.getElementById('volume-slider');
+      const volumeBar = document.querySelector('.volume-bar');
+      const progressBar = document.querySelector('.progress-current');
+      const progressContainer = document.querySelector('.progress-bar-container');
+      const currentTimeEl = document.querySelector('.current-time');
+      const totalTimeEl = document.querySelector('.total-time');
+      const repeatBtn = document.getElementById('repeat-btn');
+      const volumeBtn = document.getElementById('volume-btn');
+      const playerTitle = document.getElementById('player-title-text');
+      const reloadBtn = document.getElementById('reload-btn');
+
+      // Initialize player state
+      if (playerTitle) {
+        playerTitle.textContent = 'Музычка';
+        playerPanel.classList.add('stopped');
+        playerTitle.setAttribute('data-status', 'Остановлено');
+      }
+
+      if (!audio) {
+        console.error('Audio element not found during player initialization');
+        if (playerTitle) {
+          playerTitle.textContent = 'Музычка (Ошибка)';
+          playerTitle.style.color = 'red';
+        }
+        return;
+      }
+
+      if (currentTimeEl) currentTimeEl.textContent = '00:00';
+      if (totalTimeEl) totalTimeEl.textContent = '00:00';
+      if (progressBar) progressBar.style.width = '0%';
+
+      console.log('Initializing music player');
+      audio.load();
+      audio.loop = true;
+      audio.volume = volumeSlider ? (volumeSlider.value / 100) : 0.7;
+
+      function updateVolumeBar() {
+        if (volumeBar && volumeSlider) {
+          volumeBar.style.width = volumeSlider.value + '%';
+        }
+      }
+
+      updateVolumeBar();
+
+      setTimeout(() => {
+        if (playerPanel) playerPanel.style.opacity = '1';
+      }, 500);
+
+      if (playerHeader) {
+        playerHeader.addEventListener('click', (e) => {
+          if (e.target.closest('.player-toggle-btn')) return;
+          playerPanel.classList.toggle('expanded');
+          if (playerPanel.classList.contains('expanded')) {
+            musicToggle.querySelector('i').className = 'fas fa-chevron-up';
+          } else {
+            musicToggle.querySelector('i').className = 'fas fa-chevron-down';
+          }
+        });
+      }
+
+      audio.addEventListener('timeupdate', () => {
+        if (audio.duration) {
+          const currentTime = audio.currentTime;
+          const duration = audio.duration;
+          const progressPercent = (currentTime / duration) * 100;
+          if (progressBar) progressBar.style.width = `${progressPercent}%`;
+          const currentMinutes = Math.floor(currentTime / 60);
+          const currentSeconds = Math.floor(currentTime % 60);
+          const durationMinutes = Math.floor(duration / 60);
+          const durationSeconds = Math.floor(duration % 60);
+          if (currentTimeEl) {
+            currentTimeEl.textContent = `${currentMinutes.toString().padStart(2, '0')}:${currentSeconds.toString().padStart(2, '0')}`;
+          }
+          if (totalTimeEl) {
+            totalTimeEl.textContent = `${durationMinutes.toString().padStart(2, '0')}:${durationSeconds.toString().padStart(2, '0')}`;
+          }
+        }
+      });
+
+      if (volumeSlider) {
+        volumeSlider.addEventListener('input', () => {
+          audio.volume = volumeSlider.value / 100;
+          updateVolumeBar();
+        });
+      }
+
+      if (progressContainer) {
+        progressContainer.addEventListener('click', (e) => {
+          const progressContainerWidth = progressContainer.clientWidth;
+          const clickPosition = e.offsetX;
+          const seekTime = (clickPosition / progressContainerWidth) * audio.duration;
+          if (!isNaN(seekTime)) {
+            audio.currentTime = seekTime;
+          }
+        });
+      }
+
+      function updatePlayerState(state) {
+        playerPanel.classList.remove('playing', 'paused', 'stopped');
+        playerPanel.classList.add(state);
+        if (playerTitle) {
+          playerTitle.setAttribute('data-status', state === 'playing' ? 'Играет...' : state === 'paused' ? 'Пауза' : 'Остановлено');
+        }
+      }
+
+      function playMusic() {
+        if (!audio) return;
+        try {
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise
+              .then(() => {
+                console.log('Music playing successfully');
+                if (playPauseBtn) {
+                  playPauseBtn.classList.add('playing');
+                  playPauseBtn.querySelector('i').className = 'fas fa-pause';
+                }
+                musicPlaying = true;
+                musicStopped = false;
+                updatePlayerState('playing');
+              })
+              .catch(err => {
+                console.error('Playback error:', err);
+                if (err.name === 'NotAllowedError') {
+                  alert('Требуется взаимодействие пользователя для воспроизведения музыки');
+                }
+                updatePlayerState('stopped');
+              });
+          }
+        } catch (e) {
+          console.error('Playback error:', e);
+          updatePlayerState('stopped');
+        }
+      }
+
+      function pauseMusic() {
+        if (!audio) return;
+        audio.pause();
+        if (playPauseBtn) {
+          playPauseBtn.classList.remove('playing');
+          playPauseBtn.querySelector('i').className = 'fas fa-play';
+        }
+        musicPlaying = false;
+        musicStopped = false;
+        updatePlayerState('paused');
+      }
+
+      function stopMusic() {
+        if (!audio) return;
+        audio.pause();
+        audio.currentTime = 0;
+        if (playPauseBtn) {
+          playPauseBtn.classList.remove('playing');
+          playPauseBtn.querySelector('i').className = 'fas fa-play';
+        }
+        if (progressBar) progressBar.style.width = '0%';
+        if (currentTimeEl) currentTimeEl.textContent = '00:00';
+        musicPlaying = false;
+        musicStopped = true;
+        updatePlayerState('stopped');
+      }
+
+      if (musicToggle) {
+        musicToggle.addEventListener('click', (e) => {
+          e.stopPropagation();
+          playerPanel.classList.toggle('expanded');
+          if (playerPanel.classList.contains('expanded')) {
+            musicToggle.querySelector('i').className = 'fas fa-chevron-up';
+          } else {
+            musicToggle.querySelector('i').className = 'fas fa-chevron-down';
+          }
+          if (musicPlaying) {
+            pauseMusic();
+          } else if (!musicStopped) {
+            playMusic();
+          } else {
+            playMusic();
+          }
+        });
+      }
+
+      if (playPauseBtn) {
+        playPauseBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (musicPlaying) {
+            pauseMusic();
+          } else {
+            playMusic();
+          }
+        });
+      }
+
+      if (stopBtn) {
+        stopBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          stopMusic();
+        });
+      }
+
+      if (repeatBtn) {
+        repeatBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          audio.loop = !audio.loop;
+          repeatBtn.classList.toggle('active', audio.loop);
+        });
+        repeatBtn.classList.toggle('active', audio.loop);
+      }
+
+      if (volumeBtn) {
+        volumeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (audio.volume > 0) {
+            volumeBtn.dataset.prevVolume = audio.volume;
+            audio.volume = 0;
+            if (volumeSlider) volumeSlider.value = 0;
+            volumeBtn.querySelector('i').className = 'fas fa-volume-mute';
+          } else {
+            const prevVolume = parseFloat(volumeBtn.dataset.prevVolume || 0.7);
+            audio.volume = prevVolume;
+            if (volumeSlider) volumeSlider.value = prevVolume * 100;
+            volumeBtn.querySelector('i').className = 'fas fa-volume-up';
+          }
+          updateVolumeBar();
+        });
+      }
+
+      if (reloadBtn) {
+        reloadBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          console.log('Reloading audio');
+          const wasPlaying = !audio.paused;
+          audio.currentTime = 0;
+          audio.load();
+          if (progressBar) progressBar.style.width = '0%';
+          if (currentTimeEl) currentTimeEl.textContent = '00:00';
+          if (wasPlaying) {
+            audio.play()
+              .then(() => {
+                console.log('Audio reloaded and playing');
+                updatePlayerState('playing');
+              })
+              .catch(err => {
+                console.error('Error playing after reload:', err);
+                updatePlayerState('stopped');
+              });
+          } else {
+            console.log('Audio reloaded in paused state');
+            updatePlayerState(musicStopped ? 'stopped' : 'paused');
+          }
+          const icon = reloadBtn.querySelector('i');
+          if (icon) {
+            icon.classList.add('fa-spin');
+            setTimeout(() => {
+              icon.classList.remove('fa-spin');
+            }, 1000);
+          }
+        });
+      }
+    }
+
+    // Initialize all animations and functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(typewriterEffect, 1000);
+      setTimeout(animateDots, 2000);
+      updateDiscordStatus('online');
+      animateProgressBars();
+      initMusicPlayer();
+    });
   </script>
 </body>
 </html>
